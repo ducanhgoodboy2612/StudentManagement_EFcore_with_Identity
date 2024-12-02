@@ -1,5 +1,6 @@
 ﻿using StudentManageApp_Codef.Data.Models;
 using StudentManageApp_Codef.Data.R_IRepository;
+using System.ComponentModel.DataAnnotations;
 
 namespace StudentManageApp_Codef.Data.Repository
 {
@@ -18,5 +19,20 @@ namespace StudentManageApp_Codef.Data.Repository
 
             return user;
         }
+    }
+
+    public class AuthenticateModel
+    {
+        [Required]
+        public string Username { get; set; }
+
+        [Required]
+        public string Password { get; set; }
+    }
+
+    public class AppSettings
+    {
+        public string Secret { get; set; }
+
     }
 }

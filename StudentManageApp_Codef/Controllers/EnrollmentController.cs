@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using StudentManageApp_Codef.Data.R_IRepository;
+using StudentManageApp_Codef.Data.Repository;
 using StudentManageApp_Codef.Service;
 
 namespace StudentManageApp_Codef.Controllers
@@ -42,16 +43,26 @@ namespace StudentManageApp_Codef.Controllers
         }
 
         [HttpPost]
-        [Route("create")]
-        public async Task<IActionResult> CreateEnrollment(int studentId, int classId, DateTime enrollmentDate)
+        public async Task<IActionResult> CreateEnrollment(EnrollmentDTO enrollmentDTO)
         {
-            var result = await _service.CreateEnrollment(studentId, classId, enrollmentDate);
-            if (result == "Enrollment successful.")
-            {
-                return Ok(result);
-            }
+            var enrollment = await _service.CreateEnrollment(enrollmentDTO);
+            return Ok(enrollment);
+        }
 
-            return BadRequest(result);
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteEnrollment(int id)
+        {
+            var isDeleted = await _enrollmentRepo.SoftDeleteEnrollmentAsync(id);
+            if (!isDeleted) return NotFound();
+
+            return NoContent();
+        }
+
+        [HttpGet("paged/{studentId}")]
+        public async Task<IActionResult> GetPagedEnrollments(int studentId, int page = 1, int pageSize = 10)
+        {
+            var (enrollments, total) = await _enrollmentRepo.GetPagedEnrollmentsByStudentIdAsync(studentId, page, pageSize);
+            return Ok(new { Total = total, Data = enrollments });
         }
     }
 }

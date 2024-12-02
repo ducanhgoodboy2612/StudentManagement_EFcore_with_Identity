@@ -1,4 +1,5 @@
 ﻿using StudentManageApp_Codef.Data.Models;
+using StudentManageApp_Codef.Data.Repository;
 
 namespace StudentManageApp_Codef.Data.R_IRepository
 {
@@ -6,5 +7,8 @@ namespace StudentManageApp_Codef.Data.R_IRepository
     {
         Task<List<Exam>> GetExamsByStudentId(int studentId, DateTime startDate, DateTime endDate);
         Task<Exam> GetExamByIdAsync(int examId);
+        Task<Exam> AddExamAsync(ExamDTO examDTO);
+        Task<Exam> UpdateExamAsync(int id, ExamDTO examDTO);
+        Task<bool> DeleteExamAsync(int id);
     }
 }

@@ -11,6 +11,7 @@ namespace StudentManageApp_Codef.Data.R_IRepository
         Task<List<Exam>> GetExamsSchedule(int studentId, int n);
         Task<Student> CreateStudent(StudentDTO studentDTO);
         Task<Student> UpdateStudent(StudentDTO studentDTO);
+        Task<bool> SoftDeleteStudentAsync(int id);
         Task<Student> GetbyId(int id);
     }
 }

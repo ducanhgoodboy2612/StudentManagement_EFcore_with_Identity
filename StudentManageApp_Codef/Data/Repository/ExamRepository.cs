@@ -31,5 +31,53 @@ namespace StudentManageApp_Codef.Data.Repository
             return await _context.Exams
                 .FirstOrDefaultAsync(e => e.ExamID == examId);
         }
+
+        public async Task<Exam> AddExamAsync(ExamDTO examDTO)
+        {
+            var exam = new Exam
+            {
+                ClassID = examDTO.ClassID,
+                ExamDate = examDTO.ExamDate,
+                ExamType = examDTO.ExamType,
+                TotalMarks = examDTO.TotalMarks
+            };
+
+            await _context.Exams.AddAsync(exam);
+            await _context.SaveChangesAsync();
+            return exam;
+        }
+
+        public async Task<Exam> UpdateExamAsync(int id, ExamDTO examDTO)
+        {
+            var exam = await _context.Exams.FirstOrDefaultAsync(e => e.ExamID == id);
+            if (exam == null) return null;
+
+            exam.ClassID = examDTO.ClassID;
+            exam.ExamDate = examDTO.ExamDate;
+            exam.ExamType = examDTO.ExamType;
+            exam.TotalMarks = examDTO.TotalMarks;
+
+            await _context.SaveChangesAsync();
+            return exam;
+        }
+
+        public async Task<bool> DeleteExamAsync(int id)
+        {
+            var exam = await _context.Exams.FirstOrDefaultAsync(e => e.ExamID == id);
+            if (exam == null) return false;
+
+            _context.Exams.Remove(exam);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
+
+    public class ExamDTO
+    {
+        public int ClassID { get; set; }
+        public DateTime? ExamDate { get; set; }
+        public string ExamType { get; set; }
+        public decimal TotalMarks { get; set; }
+    }
+
 }

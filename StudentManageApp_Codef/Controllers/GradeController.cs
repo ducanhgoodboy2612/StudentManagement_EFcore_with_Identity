@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StudentManageApp_Codef.Data.R_IRepository;
+using StudentManageApp_Codef.Data.Repository;
 using StudentManageApp_Codef.Service;
 
 namespace StudentManageApp_Codef.Controllers
@@ -38,6 +39,42 @@ namespace StudentManageApp_Codef.Controllers
             {
                 return StatusCode(500, new { Message = ex.Message });
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateGrade(GradeDTO gradeDTO)
+        {
+            var grade = await _repo.CreateGradeAsync(gradeDTO);
+            return CreatedAtAction(nameof(CreateGrade), new { id = grade.GradeID }, grade);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateGrade(GradeDTO gradeDTO)
+        {
+            var grade = await _repo.UpdateGradeAsync(gradeDTO);
+            return Ok(grade);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteGrade(int id)
+        {
+            var isDeleted = await _repo.DeleteGradeAsync(id);
+            if (!isDeleted) return NotFound();
+
+            return NoContent();
+        }
+
+        [HttpGet("average-score")]
+        public async Task<IActionResult> GetAverageScore(int classId, int studentId)
+        {
+            var averageScore = await _repo.CalculateAverageScoreAsync(classId, studentId);
+
+            return Ok(new
+            {
+                ClassId = classId,
+                StudentId = studentId,
+                AverageScore = averageScore
+            });
         }
     }
 }

@@ -130,3 +130,10 @@ D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Mi
 D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Microsoft.Extensions.Identity.Stores.dll
 D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
 D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\System.Security.Permissions.dll
+D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Duende.IdentityServer.dll
+D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Duende.IdentityServer.Storage.dll
+D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\IdentityModel.dll
+D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.OpenIdConnect.dll
+D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Microsoft.AspNetCore.DataProtection.Abstractions.dll
+D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.Google.dll

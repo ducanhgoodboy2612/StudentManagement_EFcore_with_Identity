@@ -97,16 +97,12 @@ namespace StudentManageApp_Codef.Data.Repository
         public async Task<Student> GetbyId(int id)
         {
             var student = await _context.Students
-                            .Include(s => s.Enrollments)
-                            .Include(s => s.TuitionFees)
-                            .Include(s => s.Attendances)
-                            .Include(s => s.Grades)
-                            .FirstOrDefaultAsync(s => s.StudentID == id);
+                           .FirstOrDefaultAsync(s => s.StudentID == id);
 
             return student;
         }
 
-            public async Task<Student> CreateStudent(StudentDTO studentDTO)
+        public async Task<Student> CreateStudent(StudentDTO studentDTO)
         {
             if (studentDTO == null)
                 throw new ArgumentNullException(nameof(studentDTO));
@@ -119,13 +115,15 @@ namespace StudentManageApp_Codef.Data.Repository
                 BirthDate = studentDTO.BirthDate,
                 Email = studentDTO.Email,
                 Phone = studentDTO.Phone,
-                Address = studentDTO.Address
+                Address = studentDTO.Address,
+                CreatedAt = DateTime.UtcNow
             };
 
             await _context.Students.AddAsync(student);
             await _context.SaveChangesAsync();
             return student;
         }
+
 
         public async Task<Student> UpdateStudent(StudentDTO studentDTO)
         {
@@ -136,9 +134,7 @@ namespace StudentManageApp_Codef.Data.Repository
                 .FirstOrDefaultAsync(s => s.StudentID == studentDTO.StudentID);
 
             if (existingStudent == null)
-            {
                 throw new KeyNotFoundException("Sinh viên không tồn tại.");
-            }
 
             existingStudent.FirstName = studentDTO.FirstName;
             existingStudent.LastName = studentDTO.LastName;
@@ -147,12 +143,24 @@ namespace StudentManageApp_Codef.Data.Repository
             existingStudent.Email = studentDTO.Email;
             existingStudent.Phone = studentDTO.Phone;
             existingStudent.Address = studentDTO.Address;
+            existingStudent.UpdatedAt = DateTime.UtcNow;
 
             _context.Students.Update(existingStudent);
             await _context.SaveChangesAsync();
             return existingStudent;
         }
 
+
+        public async Task<bool> SoftDeleteStudentAsync(int id)
+        {
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentID == id);
+            if (student == null) return false;
+
+            student.DeletedAt = DateTime.UtcNow;
+            _context.Students.Update(student);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 
     public class StudentDTO

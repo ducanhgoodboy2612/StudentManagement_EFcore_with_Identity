@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Oracle.EntityFrameworkCore.Metadata;
 using StudentManageApp_Codef.Data;
@@ -11,9 +12,11 @@ using StudentManageApp_Codef.Data;
 namespace StudentManageApp_Codef.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241126030327_InitialIdentity")]
+    partial class InitialIdentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -90,11 +93,11 @@ namespace StudentManageApp_Codef.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("NVARCHAR2(256)");
 
-                    b.Property<int>("EmailConfirmed")
-                        .HasColumnType("NUMBER(1,0)");
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("BOOLEAN");
 
-                    b.Property<int>("LockoutEnabled")
-                        .HasColumnType("NUMBER(1,0)");
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("BOOLEAN");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("TIMESTAMP(7) WITH TIME ZONE");
@@ -113,14 +116,14 @@ namespace StudentManageApp_Codef.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("NVARCHAR2(2000)");
 
-                    b.Property<int>("PhoneNumberConfirmed")
-                        .HasColumnType("NUMBER(1,0)");
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("BOOLEAN");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("NVARCHAR2(2000)");
 
-                    b.Property<int>("TwoFactorEnabled")
-                        .HasColumnType("NUMBER(1,0)");
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("BOOLEAN");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)

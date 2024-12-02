@@ -3,9 +3,10 @@ using System.Diagnostics;
 using System.Security.Claims;
 using StudentManageApp_Codef.Data.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 namespace StudentManageApp_Codef.Data
 {
-    public class AppDbContext : IdentityDbContext
+    public class AppDbContext : IdentityDbContext<IdentityUser>
     {
         
         public DbSet<Department> Departments_n { get; set; }
@@ -29,6 +30,25 @@ namespace StudentManageApp_Codef.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<IdentityUser>(entity =>
+            {
+                entity.Property(e => e.EmailConfirmed)
+                      .HasConversion<int>() // Chuyển bool -> int
+                      .HasColumnType("NUMBER(1,0)");
+
+                entity.Property(e => e.PhoneNumberConfirmed)
+                      .HasConversion<int>()
+                      .HasColumnType("NUMBER(1,0)");
+
+                entity.Property(e => e.TwoFactorEnabled)
+                      .HasConversion<int>()
+                      .HasColumnType("NUMBER(1,0)");
+
+                entity.Property(e => e.LockoutEnabled)
+                      .HasConversion<int>()
+                      .HasColumnType("NUMBER(1,0)");
+            });
 
             // add index
             modelBuilder.Entity<Student>()

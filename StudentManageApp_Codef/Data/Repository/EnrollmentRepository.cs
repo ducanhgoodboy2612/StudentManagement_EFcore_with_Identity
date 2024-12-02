@@ -52,15 +52,16 @@ namespace StudentManageApp_Codef.Data.Repository
         public async Task<int> GetTotalCreditsForSemesterAsync(int studentId, int year, string semester)
         {
             var semesterStart = new DateTime(year, _configuration.GetValue<int>($"AppSettings:{semester}StartMonth"), 1);
-            var semesterEnd = new DateTime(year, _configuration.GetValue<int>($"AppSettings:{semester}EndMonth"), 30);
 
-            // Lấy danh sách các lớp học mà sinh viên đã đăng ký
+            var semesterEndYear = semester == "Semester1" ? year + 1 : year;
+
+            var semesterEnd = new DateTime(semesterEndYear, _configuration.GetValue<int>($"AppSettings:{semester}EndMonth"), 30);
+
             var enrolledClasses = await _context.Enrollments
                 .Where(e => e.StudentID == studentId && e.EnrollmentDate >= semesterStart && e.EnrollmentDate <= semesterEnd)
                 .Select(e => e.ClassID)
                 .ToListAsync();
 
-            // Lấy tất cả các khóa học (Course) thuộc các lớp mà sinh viên đã đăng ký
             var totalCredits = await _context.Classes
                 .Where(c => enrolledClasses.Contains(c.ClassID))
                 .Join(_context.Courses, c => c.CourseID, cr => cr.CourseID, (c, cr) => cr.Credits)
@@ -69,10 +70,53 @@ namespace StudentManageApp_Codef.Data.Repository
             return totalCredits; 
         }
 
-        public async Task AddEnrollmentAsync(Enrollment enrollment)
+        public async Task<Enrollment> CreateEnrollmentAsync(EnrollmentDTO enrollmentDTO)
         {
-            _context.Enrollments.Add(enrollment);
+            var enrollment = new Enrollment
+            {
+                StudentID = enrollmentDTO.StudentID,
+                ClassID = enrollmentDTO.ClassID,
+                EnrollmentDate = enrollmentDTO.EnrollmentDate,
+                Status = enrollmentDTO.Status,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _context.Enrollments.AddAsync(enrollment);
             await _context.SaveChangesAsync();
+            return enrollment;
+        }
+
+        public async Task<bool> SoftDeleteEnrollmentAsync(int id)
+        {
+            var enrollment = await _context.Enrollments.FirstOrDefaultAsync(e => e.EnrollmentID == id);
+            if (enrollment == null) return false;
+
+            enrollment.DeletedAt = DateTime.UtcNow;
+            _context.Enrollments.Update(enrollment);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<(IEnumerable<EnrollmentDTO>, int)> GetPagedEnrollmentsByStudentIdAsync(int studentId, int page, int pageSize)
+        {
+            var query = _context.Enrollments
+                .Where(e => e.StudentID == studentId && e.DeletedAt == null)
+                .OrderByDescending(e => e.EnrollmentDate);
+
+            var total = await query.CountAsync();
+            var enrollments = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(e => new EnrollmentDTO
+                {
+                    StudentID = e.StudentID,
+                    ClassID = e.ClassID,
+                    EnrollmentDate = e.EnrollmentDate,
+                    Status = e.Status
+                })
+                .ToListAsync();
+
+            return (enrollments, total);
         }
     }
 

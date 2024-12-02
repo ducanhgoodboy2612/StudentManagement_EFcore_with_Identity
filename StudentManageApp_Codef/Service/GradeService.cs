@@ -21,7 +21,7 @@ namespace StudentManageApp_Codef.Service
             if (exam == null)
                 return "Exam not found";
 
-            var grade = new Grade
+            var grade = new GradeDTO
             {
                 EnrollmentID = enrollmentId,
                 ExamID = examId,
@@ -35,13 +35,13 @@ namespace StudentManageApp_Codef.Service
                 if (!isEligible)
                 {
                     grade.Note = "NMR"; // Not Met Requirements
-                    await _gradeRepository.AddGradeAsync(grade);
+                    await _gradeRepository.CreateGradeAsync(grade);
                     return "Cannot add grade for Final exam as prerequisites are not met.";
                 }
             }
 
             // Add grade if valid
-            await _gradeRepository.AddGradeAsync(grade);
+            await _gradeRepository.CreateGradeAsync(grade);
 
             if (exam.ExamType == "Final")
             {

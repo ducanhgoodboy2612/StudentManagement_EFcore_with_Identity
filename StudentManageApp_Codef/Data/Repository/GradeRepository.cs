@@ -33,10 +33,68 @@ namespace StudentManageApp_Codef.Data.Repository
             return average >= 5; 
         }
 
-        public async Task AddGradeAsync(Grade grade)
+        public async Task<decimal> CalculateAverageScoreAsync(int classId, int studentId)
         {
+            var exams = await (from grade in _context.Grades
+                               join exam in _context.Exams on grade.ExamID equals exam.ExamID
+                               where exam.ClassID == classId && grade.StudentID == studentId
+                               select new
+                               {
+                                   grade.MarksObtained,
+                                   exam.TotalMarks,
+                                   exam.ExamType
+                               }).ToListAsync();
+
+            if (exams == null || exams.Count == 0)
+                return 0;
+
+            decimal totalWeightedScore = exams.Sum(e =>
+                (e.MarksObtained / e.TotalMarks * 10) * (e.ExamType == "Final" ? 2 : 1));
+            int totalExams = exams.Count + exams.Count(e => e.ExamType == "Final");
+
+            return totalWeightedScore / totalExams;
+        }
+
+        public async Task<Grade> CreateGradeAsync(GradeDTO gradeDTO)
+        {
+            var grade = new Grade
+            {
+                EnrollmentID = gradeDTO.EnrollmentID,
+                ExamID = gradeDTO.ExamID,
+                MarksObtained = gradeDTO.MarksObtained,
+                StudentID = gradeDTO.StudentID,
+                Note = gradeDTO.Note
+            };
+
             await _context.Grades.AddAsync(grade);
             await _context.SaveChangesAsync();
+            return grade;
+        }
+
+        public async Task<Grade> UpdateGradeAsync(GradeDTO gradeDTO)
+        {
+            var grade = await _context.Grades.FirstOrDefaultAsync(g => g.GradeID == gradeDTO.GradeID);
+            if (grade == null) throw new KeyNotFoundException("Grade not found.");
+
+            grade.EnrollmentID = gradeDTO.EnrollmentID;
+            grade.ExamID = gradeDTO.ExamID;
+            grade.MarksObtained = gradeDTO.MarksObtained;
+            grade.StudentID = gradeDTO.StudentID;
+            grade.Note = gradeDTO.Note;
+
+            _context.Grades.Update(grade);
+            await _context.SaveChangesAsync();
+            return grade;
+        }
+
+        public async Task<bool> DeleteGradeAsync(int gradeId)
+        {
+            var grade = await _context.Grades.FirstOrDefaultAsync(g => g.GradeID == gradeId);
+            if (grade == null) return false;
+
+            _context.Grades.Remove(grade);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<decimal> GetAverageGrade(int enrollmentId)
@@ -100,6 +158,17 @@ namespace StudentManageApp_Codef.Data.Repository
         }
 
     }
+
+    public class GradeDTO
+    {
+        public int? GradeID { get; set; } // Optional for Update
+        public int EnrollmentID { get; set; }
+        public int ExamID { get; set; }
+        public decimal MarksObtained { get; set; }
+        public int StudentID { get; set; }
+        public string Note { get; set; }
+    }
+
 
 
     public class GradeDetailsDto

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudentManageApp_Codef.Data;
@@ -7,6 +8,7 @@ using StudentManageApp_Codef.Data.R_IRepository;
 using StudentManageApp_Codef.Data.Repository;
 namespace StudentManageApp_Codef.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class StudentController : ControllerBase
@@ -47,13 +49,13 @@ namespace StudentManageApp_Codef.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetStudentById(int studentId)
+        public async Task<IActionResult> GetStudentById(int id)
         {
             
 
             try
             {
-                var student = await _studentRepository.GetbyId(studentId);
+                var student = await _studentRepository.GetbyId(id);
                 return Ok(student);
             }
             catch (KeyNotFoundException)
@@ -91,6 +93,15 @@ namespace StudentManageApp_Codef.Controllers
             {
                 return NotFound("Sinh viên không tồn tại.");
             }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> SoftDeleteStudent(int id)
+        {
+            var isDeleted = await _studentRepository.SoftDeleteStudentAsync(id);
+            if (!isDeleted) return NotFound();
+
+            return NoContent();
         }
 
         [HttpGet("student-exam-info")]

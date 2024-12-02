@@ -1,6 +1,7 @@
 ﻿using StudentManageApp_Codef.Data.Models;
 using StudentManageApp_Codef.Data.R_IRepository;
-
+using StudentManageApp_Codef.Data.Repository;
+using System.Net.WebSockets;
 namespace StudentManageApp_Codef.Service
 
 {
@@ -15,8 +16,11 @@ namespace StudentManageApp_Codef.Service
             _configuration = configuration;
         }
 
-        public async Task<string> CreateEnrollment(int studentId, int classId, DateTime enrollmentDate)
+        public async Task<string> CreateEnrollment(EnrollmentDTO enrollmentDTO)
         {
+            var studentId = enrollmentDTO.StudentID;
+            var classId = enrollmentDTO.ClassID;
+            var enrollmentDate = enrollmentDTO.EnrollmentDate;
             var classAvailable = await _enrollmentRepo.CheckClassSlotAvailableAsync(classId);
             if (!classAvailable)
             {
@@ -32,22 +36,21 @@ namespace StudentManageApp_Codef.Service
                 return $"Student has exceeded the maximum allowed credits ({maxCredits}) for this semester.";
             }
 
-            var enrollment = new Enrollment
+            var enrollment = new EnrollmentDTO
             {
                 StudentID = studentId,
                 ClassID = classId,
                 EnrollmentDate = enrollmentDate,
                 Status = 1,
-                CreatedAt = DateTime.Now
             };
 
-            await _enrollmentRepo.AddEnrollmentAsync(enrollment);
+            await _enrollmentRepo.CreateEnrollmentAsync(enrollment);
             return "Enrollment successful.";
         }
 
         private string GetSemester(DateTime date)
         {
-            if (date.Month >= 9 && date.Month <= 1)
+            if (date.Month >= 9 || date.Month <= 1)
             {
                 return "Semester1"; // Kỳ 1 từ tháng 9 đến tháng 1
             }

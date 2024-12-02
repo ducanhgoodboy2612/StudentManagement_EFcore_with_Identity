@@ -11,7 +11,9 @@ namespace StudentManageApp_Codef.Data.R_IRepository
 
         Task<bool> CheckClassSlotAvailableAsync(int classId);
         Task<int> GetTotalCreditsForSemesterAsync(int studentId, int year, string semester);
-        Task AddEnrollmentAsync(Enrollment enrollment);
+        Task<Enrollment> CreateEnrollmentAsync(EnrollmentDTO enrollmentDTO);
+        Task<bool> SoftDeleteEnrollmentAsync(int id);
+        Task<(IEnumerable<EnrollmentDTO>, int)> GetPagedEnrollmentsByStudentIdAsync(int studentId, int page, int pageSize);
 
     }
 }
