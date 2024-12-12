@@ -49,6 +49,18 @@ namespace StudentManageApp_Codef.Controllers
             }
         }
 
+        [HttpGet("get-by-course/{courseId}")]
+        public async Task<IActionResult> GetClassesByCourseId(int courseId)
+        {
+            var classes = await _res.GetClassesByCourseIdAsync(courseId);
+            if (classes == null || !classes.Any())
+            {
+                return NotFound("Không tìm thấy lớp nào cho CourseID được cung cấp.");
+            }
+
+            return Ok(classes);
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddClass([FromBody] ClassDto classDto)
         {

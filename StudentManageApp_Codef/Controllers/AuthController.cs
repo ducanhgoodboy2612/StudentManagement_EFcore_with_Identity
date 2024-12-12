@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentManageApp_Codef.Data.R_IRepository;
 using StudentManageApp_Codef.Data.Repository;
+using StudentManageApp_Codef.Service;
 
 namespace StudentManageApp_Codef.Controllers
 {
@@ -17,12 +18,35 @@ namespace StudentManageApp_Codef.Controllers
         }
 
         [HttpPost("register")]
+        //public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        //{
+        //    if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        //    var user = await _authService.RegisterAsync(model.Email, model.Password);
+        //    return Ok(new { user.Email });
+        //}
+
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var user = await _authService.RegisterAsync(model.Email, model.Password);
-            return Ok(new { user.Email });
+            var (succeeded, errors, user) = await _authService.RegisterAsync(model.Email, model.Password);
+
+            if (!succeeded)
+            {
+                return BadRequest(new
+                {
+                    Message = "User registration failed.",
+                    Errors = errors
+                });
+            }
+
+            return Ok(new
+            {
+                Message = "User registered successfully.",
+                User = new { user.Email }
+            });
         }
 
         [HttpPost("login")]
@@ -33,6 +57,28 @@ namespace StudentManageApp_Codef.Controllers
             var token = await _authService.LoginAsync(model.Email, model.Password);
             return Ok(new { Token = token });
         }
+
+        
+
+        [HttpPost("VerifyOtp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] OTPVerifyModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.email) || string.IsNullOrWhiteSpace(model.otp))
+            {
+                return BadRequest(new { Message = "Email and OTP are required." });
+            }
+
+            var token = await _authService.ValidateOtpForLogin(model.email, model.otp);
+            if (token == null)
+            {
+                return BadRequest(new { Message = "Error" });
+            }
+
+            return Ok(new { Token = token });
+        }
+
+
+
 
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(string email)
@@ -54,6 +100,21 @@ namespace StudentManageApp_Codef.Controllers
             return Ok(new { Message = "Password has been reset successfully." });
         }
 
+        [HttpGet("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            var (success, message, errors) = await _authService.ConfirmEmailAsync(userId, token);
+
+            if (!success)
+            {
+                return BadRequest(new { message, errors });
+            }
+
+            return Ok(new { message });
+        }
+
+
+
         [HttpGet("LoginWithGoogle")]
         public IActionResult LoginWithGoogle(string returnUrl = "/")
         {
@@ -68,8 +129,9 @@ namespace StudentManageApp_Codef.Controllers
             {
                 return BadRequest(new { message = "Failed to process Google login.", errors = result.Errors });
             }
-            return Redirect(returnUrl);
+            return Ok(new { message = "Google login successful", returnUrl });
         }
+
     }
 
     public class RegisterModel
@@ -82,5 +144,11 @@ namespace StudentManageApp_Codef.Controllers
     {
         public string Email { get; set; }
         public string Password { get; set; }
+    }
+
+    public class OTPVerifyModel
+    {
+        public string email { get; set; }
+        public string otp { get; set; }
     }
 }

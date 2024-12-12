@@ -1,11 +1,15 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StudentManageApp_Codef.Data.R_IRepository;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Policy;
 using System.Text;
+using StudentManageApp_Codef.Service;
 
 namespace StudentManageApp_Codef.Data.Repository
 {
@@ -15,62 +19,133 @@ namespace StudentManageApp_Codef.Data.Repository
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IConfiguration _configuration;
 
-        public AuthRepository(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration)
+        private readonly IUrlHelperFactory _urlHelperFactory;
+        private readonly IActionContextAccessor _actionContextAccessor;
+
+        private readonly EmailService _emailService;
+
+
+
+        public AuthRepository(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration, IUrlHelperFactory urlHelperFactory, IActionContextAccessor actionContextAccessor, EmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _urlHelperFactory = urlHelperFactory;
+            _actionContextAccessor = actionContextAccessor;
+            _emailService = emailService;
         }
 
-        public async Task<IdentityUser> RegisterAsync(string email, string password)
+        //public async Task<IdentityUser> RegisterAsync(string email, string password)
+        //{
+        //    var user = new IdentityUser { UserName = email, Email = email };
+
+        //    user.EmailConfirmed = false; 
+        //    user.PhoneNumberConfirmed = false; 
+        //    user.TwoFactorEnabled = false; 
+        //    user.LockoutEnabled = true; 
+
+        //    try
+        //    {
+        //        var result = await _userManager.CreateAsync(user, password);
+
+        //        if (!result.Succeeded)
+        //        {
+        //            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+        //            throw new Exception($"Failed to create user: {errors}");
+        //        }   
+        //    }
+        //    catch (DbUpdateException ex)
+        //    {
+        //        Console.WriteLine("Lỗi DbUpdateException: " + ex.Message);
+        //        if (ex.InnerException != null)
+        //        {
+        //            Console.WriteLine("InnerException: " + ex.InnerException.Message);
+        //            Console.WriteLine("Stack Trace: " + ex.InnerException.StackTrace);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine("Lỗi khác: " + ex.Message);
+        //    }
+
+        //if (!result.Succeeded)
+        //{
+        //    var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+        //    throw new Exception(errors);
+        //}
+
+        //    return user;
+        //}
+
+        //public async Task<(bool Succeeded, string[] Errors, IdentityUser? User)> RegisterAsync(string email, string password)
+        //{
+        //    var user = new IdentityUser
+        //    {
+        //        UserName = email,
+        //        Email = email,
+        //        EmailConfirmed = false,
+        //        PhoneNumberConfirmed = false,
+        //        TwoFactorEnabled = false,
+        //        LockoutEnabled = true
+        //    };
+
+        //    var result = await _userManager.CreateAsync(user, password);
+
+        //    if (!result.Succeeded)
+        //    {
+        //        return (false, result.Errors.Select(e => e.Description).ToArray(), null);
+        //    }
+
+        //    return (true, Array.Empty<string>(), user);
+        //}
+
+        public async Task<(bool Succeeded, string[] Errors, IdentityUser? User)> RegisterAsync(string email, string password)
         {
-            var user = new IdentityUser { UserName = email, Email = email };
-
-            user.EmailConfirmed = false; 
-            user.PhoneNumberConfirmed = false; 
-            user.TwoFactorEnabled = false; 
-            user.LockoutEnabled = true; 
-
-            try
+            var user = new IdentityUser
             {
-                var result = await _userManager.CreateAsync(user, password);
+                UserName = email,
+                Email = email,
+                EmailConfirmed = false, // Chưa xác nhận email
+                TwoFactorEnabled = true // Bật xác thực hai bước
+            };
 
-                if (!result.Succeeded)
-                {
-                    var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-                    throw new Exception($"Failed to create user: {errors}");
-                }   
-            }
-            catch (DbUpdateException ex)
+            var result = await _userManager.CreateAsync(user, password);
+
+            if (!result.Succeeded)
             {
-                Console.WriteLine("Lỗi DbUpdateException: " + ex.Message);
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine("InnerException: " + ex.InnerException.Message);
-                    Console.WriteLine("Stack Trace: " + ex.InnerException.StackTrace);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Lỗi khác: " + ex.Message);
+                return (false, result.Errors.Select(e => e.Description).ToArray(), null);
             }
 
-            //if (!result.Succeeded)
-            //{
-            //    var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-            //    throw new Exception(errors);
-            //}
+            // create otp
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-            return user;
+            // send email
+            var callbackUrl = $"https://localhost:44378/api/Auth/ConfirmEmail?userId={user.Id}&token={Uri.EscapeDataString(token)}";
+            await _emailService.SendEmailAsync(
+                email,
+                "Confirm your email",
+                $"<p>Please confirm your account by clicking the link below:</p><a href='{callbackUrl}'>Confirm Email</a>"
+            );
+
+            return (true, Array.Empty<string>(), user);
         }
 
-        public async Task<string> LoginAsync(string email, string password)
+        public async Task<string> ValidateOtpForLogin(string email, string otp)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user == null) throw new UnauthorizedAccessException("Invalid email or password.");
+            if (user == null)
+            {
+                return ("User not found.");
+            }
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
-            if (!result.Succeeded) throw new UnauthorizedAccessException("Invalid email or password.");
+            var isValid = await _userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider, otp);
+            if (!isValid)
+            {
+                return ("Invalid OTP.");
+            }
+
+            await _signInManager.SignInAsync(user, isPersistent: false);
 
             // Generate JWT
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -88,6 +163,82 @@ namespace StudentManageApp_Codef.Data.Repository
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+            //return (true, "Login successful.");
+        }
+
+        public async Task<string> SendOtpAfterLogin(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) throw new UnauthorizedAccessException("User not found.");
+
+            if (user.TwoFactorEnabled)
+            {
+                var otp = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider);
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "Your OTP Code",
+                    $"<p>Xin chào {user.UserName},</p>" +
+                    $"<p>Bạn đã yêu cầu xác thực OTP. Vui lòng click vào link dưới đây để xác thực:</p>" +
+                    $"<p><a href='{"http://localhost:3000/students"}'>Xác thực OTP</a></p>" +
+                    $"<p>Mã OTP: <strong>{otp}</strong></p>"
+                );
+
+                return "OTP has been sent to your email.";
+            }
+
+            throw new InvalidOperationException("Two-factor authentication is not enabled for this user.");
+        }
+
+
+        public async Task<string> LoginAsync(string email, string password)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) throw new UnauthorizedAccessException("Invalid email or password.");
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
+            if (!result.Succeeded) throw new UnauthorizedAccessException("Invalid email or password.");
+
+            if (user.TwoFactorEnabled)
+            {
+                var message = await SendOtpAfterLogin(email);
+                return message;
+            }
+
+            // Generate JWT
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Email, user.Email)
+            }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+
+
+        public async Task<(bool Success, string Message, IEnumerable<IdentityError> Errors)> ConfirmEmailAsync(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return (false, "Invalid user.", null);
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            if (!result.Succeeded)
+            {
+                return (false, "Failed to confirm email.", result.Errors);
+            }
+
+            return (true, "Email confirmed successfully!", null);
         }
 
         public async Task<IdentityResult> AddGoogleLoginAsync(string email, string providerKey)
@@ -151,10 +302,10 @@ namespace StudentManageApp_Codef.Data.Repository
 
         public IActionResult GetGoogleLoginProperties(string returnUrl)
         {
-            var redirectUrl = $"/api/Account/GoogleCallback?returnUrl={returnUrl}";
+            var redirectUrl = "https://localhost:44378/dashboard";
             var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
             return new ChallengeResult("Google", properties);
-        }
+        }                                               
 
         public async Task<IdentityResult> ProcessGoogleCallbackAsync(string returnUrl)
         {

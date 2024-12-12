@@ -137,3 +137,6 @@ D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Id
 D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.OpenIdConnect.dll
 D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Microsoft.AspNetCore.DataProtection.Abstractions.dll
 D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.Google.dll
+D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
+D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\MailKit.dll
+D:\ĐA4\Intern\StudentManageApp_Codef\StudentManageApp_Codef\bin\Debug\net8.0\MimeKit.dll

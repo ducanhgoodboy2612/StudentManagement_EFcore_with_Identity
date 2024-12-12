@@ -64,6 +64,21 @@ namespace StudentManageApp_Codef.Controllers
             return NoContent();
         }
 
+        [HttpDelete("DeleteGrades")]
+        public async Task<IActionResult> DeleteGrades(int studentId, int classId)
+        {
+            try
+            {
+                var isDeleted = await _repo.DeleteGradesByStudentAndClassAsync(studentId, classId);
+                return Ok(new { message = "Xóa điểm thành công." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Đã xảy ra lỗi khi xóa điểm.", error = ex.Message });
+            }
+        }
+
+
         [HttpGet("average-score")]
         public async Task<IActionResult> GetAverageScore(int classId, int studentId)
         {

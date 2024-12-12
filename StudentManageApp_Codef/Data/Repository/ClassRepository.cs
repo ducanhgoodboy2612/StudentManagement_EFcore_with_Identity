@@ -46,6 +46,13 @@ namespace StudentManageApp_Codef.Data.Repository
             return res;
         }
 
+        public async Task<IEnumerable<Class>> GetClassesByCourseIdAsync(int courseId)
+        {
+            return await _context.Classes
+                                 .Where(c => c.CourseID == courseId)
+                                 .ToListAsync();
+        }
+
         public async Task<ClassDto> AddClass(ClassDto classDto)
         {
             var classEntity = new Class

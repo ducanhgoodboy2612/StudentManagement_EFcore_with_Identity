@@ -8,7 +8,7 @@ namespace StudentManageApp_Codef.Data.R_IRepository
         //Task<List<Student_EnrollmentDateDto>> GetStudentsByClassIdAsync(int classId);
 
         public IEnumerable<Student_EnrollmentDateDto> GetStudentsByClassIdAsync(int classId, out int total);
-
+        Task<Enrollment> GetEnrollmentAsync(int studentId, int classId);
         Task<bool> CheckClassSlotAvailableAsync(int classId);
         Task<int> GetTotalCreditsForSemesterAsync(int studentId, int year, string semester);
         Task<Enrollment> CreateEnrollmentAsync(EnrollmentDTO enrollmentDTO);

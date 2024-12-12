@@ -13,6 +13,9 @@ using Microsoft.IdentityModel.Tokens;
 // Thêm MapIdentityApiEndpoints
 
 using System.Text;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -72,6 +75,8 @@ builder.Services.AddTransient<IStudentRepository, StudentRepository>();
 
 builder.Services.AddTransient<IClassRepository, ClassRepository>();
 
+builder.Services.AddTransient<ICourseRepository, CourseRepository>();
+
 builder.Services.AddTransient<IEnrollmentRepository, EnrollmentRepository>();
 
 builder.Services.AddTransient<IScheduleRepository, ScheduleRepository>();
@@ -88,6 +93,9 @@ builder.Services.AddScoped<ILecturerRepository, LecturerRepository>();
 
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
+builder.Services.AddScoped<IClaimRepository, ClaimRepository>();
+
+
 
 
 
@@ -96,6 +104,7 @@ builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<EnrollmentService>();
 builder.Services.AddTransient<GradeService>();
+builder.Services.AddTransient<EmailService>();
 
 builder.Services.AddCors(options =>
 {
@@ -107,6 +116,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
@@ -114,6 +125,17 @@ builder.Services.AddSwaggerGen(c =>
     // Thêm SwaggerFileOperationFilter vào Swagger
     c.OperationFilter<SwaggerFileOperationFilter>();
 });
+
+builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+builder.Services.AddSingleton<IUrlHelper>(serviceProvider =>
+{
+    var actionContext = serviceProvider.GetRequiredService<IActionContextAccessor>().ActionContext;
+    return new UrlHelper(actionContext);
+});
+builder.Services.AddHttpContextAccessor();
+
+
+
 
 var app = builder.Build();
 

@@ -16,6 +16,14 @@ namespace StudentManageApp_Codef.Controllers
             _examRepository = examRepository;
         }
 
+        [HttpGet("GetbyId")]
+        public async Task<IActionResult> GetExamsById(int id)
+        {
+           
+            var exams = await _examRepository.GetExamByIdAsync(id);
+            return Ok(exams);
+        }
+
         [HttpGet("GetExamsByStudentId")]
         public async Task<IActionResult> GetExamsByStudentId(int studentId, DateTime startDate, DateTime endDate)
         {
@@ -25,6 +33,13 @@ namespace StudentManageApp_Codef.Controllers
             }
 
             var exams = await _examRepository.GetExamsByStudentId(studentId, startDate, endDate);
+            return Ok(exams);
+        }
+
+        [HttpGet("GetExamsByClass")]
+        public async Task<IActionResult> GetExamsByClass(int classId)
+        {
+            var exams = await _examRepository.GetExamsByClassIdAsync(classId);
             return Ok(exams);
         }
 
@@ -38,12 +53,12 @@ namespace StudentManageApp_Codef.Controllers
             return CreatedAtAction(nameof(CreateExam), new { id = createdExam.ExamID }, createdExam);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateExam(int id, [FromBody] ExamDTO examDTO)
+        [HttpPost("update")]
+        public async Task<IActionResult> UpdateExam([FromBody] ExamDTO examDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var updatedExam = await _examRepository.UpdateExamAsync(id, examDTO);
+            var updatedExam = await _examRepository.UpdateExamAsync(examDTO);
             if (updatedExam == null) return NotFound();
 
             return Ok(updatedExam);

@@ -8,7 +8,6 @@ using StudentManageApp_Codef.Data.R_IRepository;
 using StudentManageApp_Codef.Data.Repository;
 namespace StudentManageApp_Codef.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class StudentController : ControllerBase
@@ -22,29 +21,43 @@ namespace StudentManageApp_Codef.Controllers
             _studentRepository = studentRepository;
         }
 
-        [HttpGet("search")]
-        public async Task<IActionResult> SearchStudents(string? firstName, string? lastName, string? phone, int page = 1, int pageSize = 10)
+        //[HttpGet("search")]
+        //public IActionResult SearchStudents(string? name, string? phone, int page = 1, int pageSize = 10)
+        //{
+        //    int totalRecords;
+        //    var students = _studentRepository.SearchStudentsAsync(name, phone, page, pageSize, out totalRecords);
+
+        //    return Ok(new
+        //    {
+        //        TotalRecords = totalRecords,
+        //        Students = students
+        //    });
+        //}
+
+        [HttpPost("search")]
+        public IActionResult SearchStudents([FromBody] Dictionary<string, object> formData)
         {
-            var result = await _studentRepository.SearchStudentsAsync(firstName, lastName, phone, page, pageSize);
+            string? name = formData.ContainsKey("name") ? formData["name"]?.ToString() : null;
+            string? phone = formData.ContainsKey("phone") ? formData["phone"]?.ToString() : null;
+            int page = formData.ContainsKey("page") ? int.Parse(formData["page"].ToString()!) : 1;
+            int pageSize = formData.ContainsKey("pageSize") ? int.Parse(formData["pageSize"].ToString()!) : 10;
+
+            int totalRecords;
+            var students = _studentRepository.SearchStudentsAsync(name, phone, page, pageSize, out totalRecords);
 
             return Ok(new
             {
-                TotalRecords = result.TotalRecords,
-                Students = result.Students
+                TotalRecords = totalRecords,
+                Students = students
             });
         }
+
 
 
         [HttpGet("all")]
         public async Task<IActionResult> GetAllStudents()
         {
-            var students = await _context.Students
-                .Include(s => s.Enrollments)   // Nếu bạn muốn lấy luôn các quan hệ liên quan
-                .Include(s => s.TuitionFees)
-                .Include(s => s.Attendances)
-                .Include(s => s.Grades)
-                .ToListAsync();
-
+            var students = await _studentRepository.GetAllStudentsAsync();
             return Ok(students);
         }
 
@@ -76,12 +89,12 @@ namespace StudentManageApp_Codef.Controllers
             return Ok(newStudent);
         }
 
-        [HttpPut("{studentId}")]
-        public async Task<IActionResult> UpdateStudent(int studentId, [FromBody] StudentDTO studentDTO)
+        [HttpPost("update")]
+        public async Task<IActionResult> UpdateStudent([FromBody] StudentDTO studentDTO)
         {
-            if (studentId != studentDTO.StudentID)
+            if (studentDTO.StudentID == null)
             {
-                return BadRequest("ID sinh viên không khớp.");
+                return BadRequest("Nhập Id sinh viên.");
             }
 
             try

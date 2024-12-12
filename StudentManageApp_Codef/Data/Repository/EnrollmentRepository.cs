@@ -39,8 +39,12 @@ namespace StudentManageApp_Codef.Data.Repository
             return query.ToList();
         }
 
+        public async Task<Enrollment> GetEnrollmentAsync(int studentId, int classId)
+        {
+            return await _context.Enrollments
+                .FirstOrDefaultAsync(e => e.StudentID == studentId && e.ClassID == classId);
+        }
 
-      
         public async Task<bool> CheckClassSlotAvailableAsync(int classId)
         {
             var classItem = await _context.Classes.FirstOrDefaultAsync(c => c.ClassID == classId);

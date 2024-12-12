@@ -13,5 +13,6 @@ namespace StudentManageApp_Codef.Data.R_IRepository
         Task<IEnumerable<Grade>> GetGradesByStudentId(int studentId, DateTime startDate, DateTime endDate);
         Task<List<GradeSummaryDto>> GetExamResultsByClassId(int classId);
         Task<decimal> CalculateAverageScoreAsync(int classId, int studentId);
+        Task<bool> DeleteGradesByStudentAndClassAsync(int studentId, int classId);
     }
 }

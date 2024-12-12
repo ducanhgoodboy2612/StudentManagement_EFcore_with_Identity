@@ -42,6 +42,23 @@ namespace StudentManageApp_Codef.Controllers
             }
         }
 
+        [HttpGet("GetEnrollment")]
+        public async Task<IActionResult> GetEnrollment(int studentId, int classId)
+        {
+            if (studentId <= 0 || classId <= 0)
+            {
+                return BadRequest("Invalid studentId or classId.");
+            }
+
+            var enrollment = await _enrollmentRepo.GetEnrollmentAsync(studentId, classId);
+            if (enrollment == null)
+            {
+                return NotFound("Enrollment not found.");
+            }
+
+            return Ok(enrollment);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateEnrollment(EnrollmentDTO enrollmentDTO)
         {

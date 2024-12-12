@@ -32,6 +32,14 @@ namespace StudentManageApp_Codef.Data.Repository
                 .FirstOrDefaultAsync(e => e.ExamID == examId);
         }
 
+        public async Task<List<Exam>> GetExamsByClassIdAsync(int classId)
+        {
+            return await _context.Exams
+                .Where(e => e.ClassID == classId)
+                .ToListAsync();
+        }
+
+
         public async Task<Exam> AddExamAsync(ExamDTO examDTO)
         {
             var exam = new Exam
@@ -47,9 +55,9 @@ namespace StudentManageApp_Codef.Data.Repository
             return exam;
         }
 
-        public async Task<Exam> UpdateExamAsync(int id, ExamDTO examDTO)
+        public async Task<Exam> UpdateExamAsync(ExamDTO examDTO)
         {
-            var exam = await _context.Exams.FirstOrDefaultAsync(e => e.ExamID == id);
+            var exam = await _context.Exams.FirstOrDefaultAsync(e => e.ExamID == examDTO.ExamID);
             if (exam == null) return null;
 
             exam.ClassID = examDTO.ClassID;
@@ -74,6 +82,7 @@ namespace StudentManageApp_Codef.Data.Repository
 
     public class ExamDTO
     {
+        public int ExamID { get; set; }
         public int ClassID { get; set; }
         public DateTime? ExamDate { get; set; }
         public string ExamType { get; set; }

@@ -10,5 +10,6 @@ namespace StudentManageApp_Codef.Data.R_IRepository
         Task<ClassDto> AddClass(ClassDto classDto);
         Task<ClassDto> UpdateClass(ClassDto classDto);
         Task<bool> DeleteClass(int id);
+        Task<IEnumerable<Class>> GetClassesByCourseIdAsync(int courseId);
     }
 }

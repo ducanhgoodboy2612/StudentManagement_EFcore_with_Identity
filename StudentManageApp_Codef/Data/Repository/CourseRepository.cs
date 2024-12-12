@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StudentManageApp_Codef.Data.Models;
+using StudentManageApp_Codef.Data.R_IRepository;
 
 namespace StudentManageApp_Codef.Data.Repository
 {
-    public class CourseRepository
+    public class CourseRepository : ICourseRepository
     {
         private readonly AppDbContext _context;
 
@@ -33,6 +34,11 @@ namespace StudentManageApp_Codef.Data.Repository
             return await _context.Courses
                 .Include(c => c.Department)
                 .FirstOrDefaultAsync(c => c.CourseID == courseId);
+        }
+
+        public async Task<IEnumerable<Course>> GetAllCoursesAsync()
+        {
+            return await _context.Courses.ToListAsync();
         }
 
         // Thêm mới khóa học

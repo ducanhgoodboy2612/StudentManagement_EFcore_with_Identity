@@ -39,6 +39,31 @@ namespace StudentManageApp_Codef.Data.Repository
             return (students, totalRecords);
         }
 
+        public IEnumerable<Student> SearchStudentsAsync(string? name, string? phone, int page, int pageSize, out int total)
+        {
+            var query = _context.Students.AsQueryable();
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                var lowerName = name.ToLower();
+                query = query.Where(s =>
+                    (s.FirstName + " " + s.LastName).ToLower().Contains(lowerName) ||
+                    (s.LastName + " " + s.FirstName).ToLower().Contains(lowerName));
+            }
+
+            if (!string.IsNullOrEmpty(phone))
+                query = query.Where(s => s.Phone.Contains(phone));
+
+            total =  query.Count();
+
+            return query
+                 .Skip((page - 1) * pageSize)
+                 .Take(pageSize)
+                 .ToList();
+        }
+
+
+
 
         public async Task<StudentExamInfoDto> GetStudentExamInfo(int studentId, DateTime startDate, DateTime endDate)
         {
@@ -160,6 +185,12 @@ namespace StudentManageApp_Codef.Data.Repository
             _context.Students.Update(student);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<List<Student>> GetAllStudentsAsync()
+        {
+            return await _context.Students
+                .ToListAsync();
         }
     }
 
